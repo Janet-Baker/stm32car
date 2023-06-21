@@ -57,14 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PWM_PA0_Pin GPIO_PIN_0
-#define PWM_PA0_GPIO_Port GPIOA
-#define PWM_PA6_Pin GPIO_PIN_6
-#define PWM_PA6_GPIO_Port GPIOA
-#define UART_8266_SEND_Pin GPIO_PIN_10
-#define UART_8266_SEND_GPIO_Port GPIOC
-#define UART_8266_RECV_Pin GPIO_PIN_11
-#define UART_8266_RECV_GPIO_Port GPIOC
+#define UART_BT_SEND_Pin GPIO_PIN_10
+#define UART_BT_SEND_GPIO_Port GPIOC
+#define UART_BT_RECV_Pin GPIO_PIN_11
+#define UART_BT_RECV_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 

@@ -72,15 +72,15 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PC10     ------> UART4_TX
     PC11     ------> UART4_RX
     */
-    GPIO_InitStruct.Pin = UART_8266_SEND_Pin;
+    GPIO_InitStruct.Pin = UART_BT_SEND_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(UART_8266_SEND_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(UART_BT_SEND_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = UART_8266_RECV_Pin;
+    GPIO_InitStruct.Pin = UART_BT_RECV_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(UART_8266_RECV_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(UART_BT_RECV_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN UART4_MspInit 1 */
 
@@ -103,7 +103,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PC10     ------> UART4_TX
     PC11     ------> UART4_RX
     */
-    HAL_GPIO_DeInit(GPIOC, UART_8266_SEND_Pin|UART_8266_RECV_Pin);
+    HAL_GPIO_DeInit(GPIOC, UART_BT_SEND_Pin|UART_BT_RECV_Pin);
 
   /* USER CODE BEGIN UART4_MspDeInit 1 */
 

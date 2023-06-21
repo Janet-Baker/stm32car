@@ -88,7 +88,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
-  MX_TIM3_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
@@ -154,9 +153,9 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  HAL_NVIC_SystemReset();
   while (1)
   {
-      HAL_NVIC_SystemReset();
   }
   /* USER CODE END Error_Handler_Debug */
 }
