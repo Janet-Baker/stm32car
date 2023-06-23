@@ -57,10 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define UART_BT_SEND_Pin GPIO_PIN_10
-#define UART_BT_SEND_GPIO_Port GPIOC
-#define UART_BT_RECV_Pin GPIO_PIN_11
-#define UART_BT_RECV_GPIO_Port GPIOC
+#define UART_SEND_Pin GPIO_PIN_10
+#define UART_SEND_GPIO_Port GPIOC
+#define UART_RECV_Pin GPIO_PIN_11
+#define UART_RECV_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 
