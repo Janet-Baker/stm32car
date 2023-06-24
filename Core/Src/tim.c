@@ -138,7 +138,11 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
-
+//  Start PWM
+      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_1);
+      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_2);
+      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_3);
+      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_4);
   /* USER CODE END TIM3_MspPostInit 1 */
   }
 
