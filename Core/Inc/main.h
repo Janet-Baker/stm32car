@@ -57,6 +57,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define REV_CH1_Pin GPIO_PIN_7
+#define REV_CH1_GPIO_Port GPIOE
+#define REV_CH2_Pin GPIO_PIN_9
+#define REV_CH2_GPIO_Port GPIOE
+#define REV_CH3_Pin GPIO_PIN_11
+#define REV_CH3_GPIO_Port GPIOE
+#define REV_CH4_Pin GPIO_PIN_13
+#define REV_CH4_GPIO_Port GPIOE
 #define UART_SEND_Pin GPIO_PIN_10
 #define UART_SEND_GPIO_Port GPIOC
 #define UART_RECV_Pin GPIO_PIN_11
