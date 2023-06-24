@@ -21,7 +21,7 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+uint8_t rx_data[rx_data_length];
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;

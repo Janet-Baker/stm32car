@@ -25,7 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,8 +98,17 @@ int main(void)
       }
       HAL_Delay(100);
   }
-  uint8_t stateOk[] = "OK";
-  HAL_UART_Transmit_DMA(&huart4,stateOk, 2);
+  uint8_t stateOk[] = "BOOT_OK";
+  HAL_UART_Transmit_DMA(&huart4,stateOk, 7);
+
+//  启动完成，可以接收数据了
+    for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
+        HAL_Delay(100);
+    }
+//  使能串口空闲中断
+    __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+//  启动DMA接收
+    HAL_UART_Receive_DMA(&huart4, rx_data, rx_data_length);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -155,6 +163,75 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+void MyUartCallbackHandler(void) {
+//    识别控制信号'M'并执行
+    if (rx_data[0] == 'M') {
+        // 轮子1正反转
+        if (rx_data[1] == '0') {
+            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+        }
+        // 轮子2正反转
+        if (rx_data[2] == '0') {
+            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+        }
+        // 轮子3正反转
+        if (rx_data[3] == '0') {
+            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+        }
+        // 轮子4正反转
+        if (rx_data[4] == '0') {
+            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+        }
+        // 轮子1速度
+        if (rx_data[5] >= '0' && rx_data[5] < '3' && rx_data[6] >= '0' && rx_data[6] < '6' && rx_data[7] >= '0' &&
+            rx_data[7] < '6') {
+            uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm1);
+        }
+        // 轮子2速度
+        if (rx_data[8] >= '0' && rx_data[8] < '3' && rx_data[9] >= '0' && rx_data[9] < '6' && rx_data[10] >= '0' &&
+            rx_data[10] < '6') {
+            uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2);
+        }
+        // 轮子3速度
+        if (rx_data[11] >= '0' && rx_data[11] < '3' && rx_data[12] >= '0' && rx_data[12] < '6' && rx_data[13] >= '0' &&
+            rx_data[13] < '6') {
+            uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm3);
+        }
+        // 轮子4速度
+        if (rx_data[14] >= '0' && rx_data[14] < '3' && rx_data[15] >= '0' && rx_data[15] < '6' && rx_data[16] >= '0' &&
+            rx_data[16] < '6') {
+            uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm4);
+        }
+    }
+}
+
+
+void Uart_Receive_Data(UART_HandleTypeDef *huart)
+{
+    if(RESET != __HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))   //判断是否是空闲中断
+    {
+        __HAL_UART_CLEAR_IDLEFLAG(huart);                     //清除空闲中断标志（否则会一直不断进入中断）
+        MyUartCallbackHandler();                                 //调用中断处理函数,这个函数自己写
+        for(int i = 0; i < rx_data_length; i++) {
+            rx_data[i] = 0;
+        } // 清空数组
+        HAL_UART_Receive_DMA(huart, rx_data, rx_data_length);             //重启开始DMA传输
+    }
+}
+
+
 /* USER CODE END 4 */
 
 /**
@@ -165,6 +242,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+
   __disable_irq();
   HAL_NVIC_SystemReset();
   while (1)

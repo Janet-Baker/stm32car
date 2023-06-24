@@ -72,6 +72,10 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
+#ifndef Uart_Receive_Data
+extern void Uart_Receive_Data(UART_HandleTypeDef *huart);
+#endif
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
