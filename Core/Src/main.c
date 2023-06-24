@@ -92,7 +92,14 @@ int main(void)
   MX_UART4_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+  // Report that we have initialized.
+  for(int i=0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i){
+      if (i > 100) {
+          Error_Handler();
+      }
+      HAL_Delay(100);
+  }
+  HAL_UART_Transmit_DMA(&huart4,"OK", 2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
