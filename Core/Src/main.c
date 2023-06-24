@@ -99,7 +99,8 @@ int main(void)
       }
       HAL_Delay(100);
   }
-  HAL_UART_Transmit_DMA(&huart4,"OK", 2);
+  uint8_t stateOk[] = "OK";
+  HAL_UART_Transmit_DMA(&huart4,stateOk, 2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
