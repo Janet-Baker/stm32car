@@ -166,8 +166,8 @@ void SystemClock_Config(void)
 void MyUartCallbackHandler(void) {
 //    识别控制信号'M'并执行
     if (rx_data[0] == 'M') {
-        // 点亮LED2
-        HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+        // DEBUG用，反转LED2状态，用来表明指令执行了。
+        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
         // 轮子1正反转
         if (rx_data[1] == '0') {
             HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
@@ -222,10 +222,10 @@ void MyUartCallbackHandler(void) {
 
 void Uart_Receive_Data(UART_HandleTypeDef *huart)
 {
-    if(RESET != __HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))   //判断是否是空闲中断
+    if(RESET != __HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))   // 判断是否是空闲中断
     {
-        __HAL_UART_CLEAR_IDLEFLAG(huart);                     //清除空闲中断标志（否则会一直不断进入中断）
-        MyUartCallbackHandler();                                 //调用中断处理函数,这个函数自己写
+        __HAL_UART_CLEAR_IDLEFLAG(huart);                     // 清除空闲中断标志（否则会一直不断进入中断）
+        MyUartCallbackHandler();                                 // 调用中断处理函数,这个函数自己写
         for(int i = 0; i < rx_data_length; i++) {
             rx_data[i] = 0;
         } // 清空数组

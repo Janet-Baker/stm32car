@@ -2,3 +2,4 @@
 .idea
 MDK-ARM/stm32car.uvguix.*
 MDK-ARM/stm32car/
+MDK-ARM/EventRecorderStub.scvd
