@@ -166,6 +166,8 @@ void SystemClock_Config(void)
 void MyUartCallbackHandler(void) {
 //    识别控制信号'M'并执行
     if (rx_data[0] == 'M') {
+        // 点亮LED2
+        HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
         // 轮子1正反转
         if (rx_data[1] == '0') {
             HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
@@ -242,7 +244,8 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  // 熄灭LED2
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
   __disable_irq();
   HAL_NVIC_SystemReset();
   while (1)
