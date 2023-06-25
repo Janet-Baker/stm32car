@@ -25,6 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +57,14 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint16_t logarithmic_mapping(uint16_t x){
+    uint16_t min_x = 0;
+    uint16_t max_x = 999;
+    uint16_t min_y = 999;
+    uint16_t max_y = 99;
+    uint16_t y = min_y + (max_y - min_y) * log10(1 + (x - min_x) / (max_x - min_x));
+    return y;
+}
 
 /* USER CODE END 0 */
 
@@ -196,28 +205,95 @@ void MyUartCallbackHandler(void) {
             HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
         }
         // 轮子1速度
-        if (rx_data[5] >= '0' && rx_data[5] < '3' && rx_data[6] >= '0' && rx_data[6] < '6' && rx_data[7] >= '0' &&
-            rx_data[7] < '6') {
-            uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm1);
+        uint16_t pwm1 = logarithmic_mapping((rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0'));
+        __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
+        if (pwm1<100 || pwm1>1000){
+            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
         }
         // 轮子2速度
-        if (rx_data[8] >= '0' && rx_data[8] < '3' && rx_data[9] >= '0' && rx_data[9] < '6' && rx_data[10] >= '0' &&
-            rx_data[10] < '6') {
-            uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2);
+        uint16_t pwm2 = logarithmic_mapping((rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0'));
+        __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
+        if (pwm2<100 || pwm2>1000){
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
         }
         // 轮子3速度
-        if (rx_data[11] >= '0' && rx_data[11] < '3' && rx_data[12] >= '0' && rx_data[12] < '6' && rx_data[13] >= '0' &&
-            rx_data[13] < '6') {
-            uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm3);
+        uint16_t pwm3 = logarithmic_mapping((rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0'));
+        __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
+        if ( pwm3<100 || pwm3>1000){
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
         }
         // 轮子4速度
-        if (rx_data[14] >= '0' && rx_data[14] < '3' && rx_data[15] >= '0' && rx_data[15] < '6' && rx_data[16] >= '0' &&
-            rx_data[16] < '6') {
-            uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm4);
+        uint16_t pwm4 = logarithmic_mapping((rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0'));
+        __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
+        if (pwm4<100 || pwm4>1000){
+            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
+        } else {
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4/2);
+        }
+    } else if (rx_data[0] == 'S') {
+        // DEBUG用，反转LED2状态，用来表明指令执行了。
+        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+        // 轮子1正反转
+        if (rx_data[1] == '0') {
+            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+        }
+        // 轮子2正反转
+        if (rx_data[2] == '0') {
+            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+        }
+        // 轮子3正反转
+        if (rx_data[3] == '0') {
+            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+        }
+        // 轮子4正反转
+        if (rx_data[4] == '0') {
+            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+        } else {
+            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+        }
+        // 轮子1速度
+        uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
+        __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
+        if (pwm1>999 || pwm1< 99 ){
+            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
+        }
+        // 轮子2速度
+        uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
+        __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
+        if (pwm2>999 || pwm2< 99 ){
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
+        }
+        // 轮子3速度
+        uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
+        __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
+        if ( pwm3>999 || pwm3< 99){
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
+        }
+        // 轮子4速度
+        uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
+        __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
+        if (pwm4>999 || pwm4< 99){
+            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
+        } else {
+            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4/2);
         }
     }
 }
