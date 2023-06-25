@@ -89,7 +89,10 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_UART4_Init();
+  MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   // Report that we have initialized.
   for(int i=0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i){
