@@ -57,6 +57,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Convert the input speed to make it more intuitive
 uint16_t logarithmic_mapping(uint16_t x){
     uint16_t min_x = 0;
     uint16_t max_x = 999;
@@ -98,8 +99,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_UART4_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM2_Init();
   MX_TIM4_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
@@ -113,11 +114,11 @@ int main(void)
   uint8_t stateOk[] = "BOOT_OK";
   HAL_UART_Transmit_DMA(&huart4,stateOk, 7);
 
-//  启动完成，可以接收数据了
+//  Launch completed and ready to receive data
     for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
         HAL_Delay(100);
     }
-//  使能串口空闲中断
+//  Enable serial port idle interrupt
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
 //  Enable DMA reception to Idle
 //  "rx_data_length" is defined in "usart.h"
@@ -175,127 +176,143 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+// Pending Implementation
 void MyUartCallbackHandler(void) {
-//    识别控制信号'M'并执行
-    if (rx_data[0] == 'M') {
-        // DEBUG用，反转LED2状态，用来表明指令执行了。
-        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-        // 轮子1正反转
-        if (rx_data[1] == '0') {
-            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+//    Detect and execute control command
+//    TO-DO: Fix PWM generation for motor
+//    https://zhuanlan.zhihu.com/p/506458493
+    switch (rx_data[0]) {
+        //  'M': Human-friendly speed control command
+        case 'M': {
+            // DEBUG, toggle LED2 to indicate that we have received a command.
+            HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+            // Direction of wheel 1
+            if (rx_data[1] == '0') {
+                HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 2
+            if (rx_data[2] == '0') {
+                HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 3
+            if (rx_data[3] == '0') {
+                HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 4
+            if (rx_data[4] == '0') {
+                HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+            }
+            // Speed of wheel 1
+            uint16_t pwm1 = logarithmic_mapping(
+                    (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0'));
+            __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
+            if (pwm1 < 100 || pwm1 > 1000) {
+                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+            } else {
+                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
+            }
+            // Speed of wheel 2
+            uint16_t pwm2 = logarithmic_mapping(
+                    (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0'));
+            __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
+            if (pwm2 < 100 || pwm2 > 1000) {
+                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+            } else {
+                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
+            }
+            // Speed of wheel 3
+            uint16_t pwm3 = logarithmic_mapping(
+                    (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0'));
+            __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
+            if (pwm3 < 100 || pwm3 > 1000) {
+                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+            } else {
+                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
+            }
+            // Speed of wheel 4
+            uint16_t pwm4 = logarithmic_mapping(
+                    (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0'));
+            __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
+            if (pwm4 < 100 || pwm4 > 1000) {
+                __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
+            } else {
+                __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4 / 2);
+            }
+            break;
         }
-        // 轮子2正反转
-        if (rx_data[2] == '0') {
-            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
-        }
-        // 轮子3正反转
-        if (rx_data[3] == '0') {
-            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
-        }
-        // 轮子4正反转
-        if (rx_data[4] == '0') {
-            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
-        }
-        // 轮子1速度
-        uint16_t pwm1 = logarithmic_mapping((rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0'));
-        __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
-        if (pwm1<100 || pwm1>1000){
-            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-        } else {
+            // 'S': DEBUG usage, raw speed control
+        case 'S': {
+            // toggle LED2 to indicate that we have received a command.
+            HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+            // Direction of wheel 1
+            if (rx_data[1] == '0') {
+                HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 2
+            if (rx_data[2] == '0') {
+                HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 3
+            if (rx_data[3] == '0') {
+                HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+            }
+            // Direction of wheel 4
+            if (rx_data[4] == '0') {
+                HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+            } else {
+                HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+            }
+            // Speed of wheel 1
+            uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
+            __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
             __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
-        }
-        // 轮子2速度
-        uint16_t pwm2 = logarithmic_mapping((rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0'));
-        __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
-        if (pwm2<100 || pwm2>1000){
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
-        } else {
+
+            // Speed of wheel 2
+            uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
+            __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
             __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
-        }
-        // 轮子3速度
-        uint16_t pwm3 = logarithmic_mapping((rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0'));
-        __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
-        if ( pwm3<100 || pwm3>1000){
-            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
-        } else {
+
+            // Speed of wheel 3
+            uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
+            __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
             __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
+
+            // Speed of wheel 4
+            uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
+            __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
+            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4 / 2);
+            break;
         }
-        // 轮子4速度
-        uint16_t pwm4 = logarithmic_mapping((rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0'));
-        __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
-        if (pwm4<100 || pwm4>1000){
-            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-        } else {
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4/2);
+            // 'E': Echo that we are online
+        case 'E': {
+            // toggle LED2 to indicate that we have received a command.
+            HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+            // erase command to avoid calling echo again
+            rx_data[0] = '0';
+            __HAL_UART_DISABLE_IT(&huart4, UART_IT_IDLE);
+            // send buffer
+            // Notice! calling this function may trigger a UART interrupt
+            // which will call MyUartCallbackHandler() again
+            HAL_UART_Transmit(&huart4, rx_data + 1, tx_data_length, 300);
+            __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+            break;
         }
-    } else if (rx_data[0] == 'S') {
-        // DEBUG用，反转LED2状态，用来表明指令执行了。
-        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-        // 轮子1正反转
-        if (rx_data[1] == '0') {
-            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
-        }
-        // 轮子2正反转
-        if (rx_data[2] == '0') {
-            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
-        }
-        // 轮子3正反转
-        if (rx_data[3] == '0') {
-            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
-        }
-        // 轮子4正反转
-        if (rx_data[4] == '0') {
-            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
-        } else {
-            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
-        }
-        // 轮子1速度
-        uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
-        __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
-        if (pwm1>999 || pwm1< 99 ){
-            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-        } else {
-            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
-        }
-        // 轮子2速度
-        uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
-        __HAL_TIM_SET_AUTORELOAD(&htim3, pwm2);
-        if (pwm2>999 || pwm2< 99 ){
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
-        } else {
-            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
-        }
-        // 轮子3速度
-        uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
-        __HAL_TIM_SET_AUTORELOAD(&htim4, pwm3);
-        if ( pwm3>999 || pwm3< 99){
-            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
-        } else {
-            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
-        }
-        // 轮子4速度
-        uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
-        __HAL_TIM_SET_AUTORELOAD(&htim5, pwm4);
-        if (pwm4>999 || pwm4< 99){
-            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-        } else {
-            __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, pwm4/2);
-        }
+        default:
+            return;
     }
 }
 
@@ -321,7 +338,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  // 熄灭LED2
+  // Turn off LED2
   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
   __disable_irq();
   HAL_NVIC_SystemReset();

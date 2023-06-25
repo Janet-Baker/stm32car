@@ -35,8 +35,8 @@ extern "C" {
 extern UART_HandleTypeDef huart4;
 
 /* USER CODE BEGIN Private defines */
-// 接收指令的规范长度
-// M0010000255000255
+// General length of Asynchronous Receiver
+// M0101000255000255
 #ifndef rx_data_length
 #define rx_data_length 17
 #endif
@@ -45,7 +45,7 @@ extern UART_HandleTypeDef huart4;
 extern uint8_t rx_data[rx_data_length];
 #endif
 
-// 发送应答的规范长度
+// General length of Asynchronous Transmitter
 #ifndef tx_data_length
 #define tx_data_length 16
 #endif
