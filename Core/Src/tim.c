@@ -319,8 +319,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     __HAL_AFIO_REMAP_TIM2_PARTIAL_1();
 
   /* USER CODE BEGIN TIM2_MspPostInit 1 */
-//  Start PWM
-      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_2);
   /* USER CODE END TIM2_MspPostInit 1 */
   }
   else if(timHandle->Instance==TIM3)
@@ -339,8 +337,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
-//  Start PWM
-      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_2);
   /* USER CODE END TIM3_MspPostInit 1 */
   }
   else if(timHandle->Instance==TIM4)
@@ -361,8 +357,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     __HAL_AFIO_REMAP_TIM4_ENABLE();
 
   /* USER CODE BEGIN TIM4_MspPostInit 1 */
-//  Start PWM
-      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_2);
   /* USER CODE END TIM4_MspPostInit 1 */
   }
   else if(timHandle->Instance==TIM5)
@@ -381,8 +375,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM5_MspPostInit 1 */
-//  Start PWM
-      HAL_TIM_PWM_Start(timHandle, TIM_CHANNEL_2);
   /* USER CODE END TIM5_MspPostInit 1 */
   }
 

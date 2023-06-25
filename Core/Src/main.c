@@ -104,15 +104,20 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-  // Report that we have initialized.
-  for(int i=0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i){
-      if (i > 100) {
-          Error_Handler();
-      }
-      HAL_Delay(100);
-  }
-  uint8_t stateOk[] = "BOOT_OK";
-  HAL_UART_Transmit_DMA(&huart4,stateOk, 7);
+    // init PWM
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
+    // Report that we have initialized.
+    for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
+        if (i > 100) {
+            Error_Handler();
+        }
+        HAL_Delay(100);
+    }
+    tx_data[0] = 'O'; tx_data[1]='K';
+    HAL_UART_Transmit_DMA(&huart4, tx_data, 2);
 
 //  Launch completed and ready to receive data
     for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {

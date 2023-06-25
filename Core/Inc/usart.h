@@ -50,6 +50,9 @@ extern uint8_t rx_data[rx_data_length];
 #define tx_data_length 16
 #endif
 
+#ifndef tx_data
+extern uint8_t tx_data[tx_data_length];
+#endif
 
 /* USER CODE END Private defines */
 
