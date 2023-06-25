@@ -119,8 +119,9 @@ int main(void)
     }
 //  使能串口空闲中断
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
-//  启动DMA接收
-    HAL_UART_Receive_DMA(&huart4, rx_data, rx_data_length);
+//  Enable DMA reception to Idle
+//  "rx_data_length" is defined in "usart.h"
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart4, rx_data, rx_data_length);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -298,20 +299,17 @@ void MyUartCallbackHandler(void) {
     }
 }
 
-
-void Uart_Receive_Data(UART_HandleTypeDef *huart)
-{
-    if(RESET != __HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))   // 判断是否是空闲中断
-    {
-        __HAL_UART_CLEAR_IDLEFLAG(huart);                     // 清除空闲中断标志（否则会一直不断进入中断）
-        MyUartCallbackHandler();                                 // 调用中断处理函数,这个函数自己写
-        for(int i = 0; i < rx_data_length; i++) {
-            rx_data[i] = 0;
-        } // 清空数组
-        HAL_UART_Receive_DMA(huart, rx_data, rx_data_length);             //重启开始DMA传输
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+    UNUSED(Size);
+    // Calling self written interrupt handling functions
+    MyUartCallbackHandler();
+    // Restart DMA transmission
+    // the usage of "HAL_UART_Transmit_DMA" will cause "HAL_BUSY" error
+    if (HAL_DMA_GetState(huart->hdmarx) == HAL_DMA_STATE_BUSY) {
+        HAL_DMA_Abort(huart->hdmarx);
     }
+    HAL_UARTEx_ReceiveToIdle_DMA(huart,rx_data,rx_data_length);
 }
-
 
 /* USER CODE END 4 */
 
