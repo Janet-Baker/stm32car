@@ -116,8 +116,9 @@ int main(void)
         }
         HAL_Delay(100);
     }
-    tx_data[0] = 'O'; tx_data[1]='K';
-    HAL_UART_Transmit_DMA(&huart4, tx_data, 2);
+    // "BOOT_OK"
+    tx_data[0] = 'B'; tx_data[1]='O'; tx_data[2]='O'; tx_data[3]='T'; tx_data[4]='_'; tx_data[5]='O'; tx_data[6]='K';
+    HAL_UART_Transmit_DMA(&huart4, tx_data, 7);
 
 //  Launch completed and ready to receive data
     for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
@@ -128,6 +129,7 @@ int main(void)
 //  Enable DMA reception to Idle
 //  "rx_data_length" is defined in "usart.h"
     HAL_UARTEx_ReceiveToIdle_DMA(&huart4, rx_data, rx_data_length);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -215,6 +217,7 @@ void MyUartCallbackHandler(void) {
             } else {
                 HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
             }
+
             // Speed of wheel 1
             uint16_t pwm1 = logarithmic_mapping(
                     (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0'));
@@ -224,6 +227,7 @@ void MyUartCallbackHandler(void) {
             } else {
                 __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm1 / 2);
             }
+
             // Speed of wheel 2
             uint16_t pwm2 = logarithmic_mapping(
                     (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0'));
@@ -233,6 +237,7 @@ void MyUartCallbackHandler(void) {
             } else {
                 __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm2 / 2);
             }
+
             // Speed of wheel 3
             uint16_t pwm3 = logarithmic_mapping(
                     (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0'));
@@ -242,6 +247,7 @@ void MyUartCallbackHandler(void) {
             } else {
                 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3 / 2);
             }
+
             // Speed of wheel 4
             uint16_t pwm4 = logarithmic_mapping(
                     (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0'));
@@ -281,6 +287,7 @@ void MyUartCallbackHandler(void) {
             } else {
                 HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
             }
+
             // Speed of wheel 1
             uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
             __HAL_TIM_SET_AUTORELOAD(&htim2, pwm1);
@@ -309,7 +316,7 @@ void MyUartCallbackHandler(void) {
             // erase command to avoid calling echo again
             rx_data[0] = '0';
             __HAL_UART_DISABLE_IT(&huart4, UART_IT_IDLE);
-            // send buffer
+            // send buffer, reused rx_data as tx_data
             // Notice! calling this function may trigger a UART interrupt
             // which will call MyUartCallbackHandler() again
             HAL_UART_Transmit(&huart4, rx_data + 1, tx_data_length, 300);
@@ -330,7 +337,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     if (HAL_DMA_GetState(huart->hdmarx) == HAL_DMA_STATE_BUSY) {
         HAL_DMA_Abort(huart->hdmarx);
     }
-    HAL_UARTEx_ReceiveToIdle_DMA(huart,rx_data,rx_data_length);
+    HAL_UARTEx_ReceiveToIdle_DMA(huart, rx_data, rx_data_length);
 }
 
 /* USER CODE END 4 */
@@ -343,13 +350,12 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  // Turn off LED2
-  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-  __disable_irq();
-  HAL_NVIC_SystemReset();
-  while (1)
-  {
-  }
+    // Turn off LED2
+    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    __disable_irq();
+    HAL_NVIC_SystemReset();
+    while (1) {
+    }
   /* USER CODE END Error_Handler_Debug */
 }
 
