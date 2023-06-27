@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED2_Pin GPIO_PIN_5
 #define LED2_GPIO_Port GPIOE
+#define WHEEL1_Pin GPIO_PIN_0
+#define WHEEL1_GPIO_Port GPIOB
 #define REV_CH1_Pin GPIO_PIN_7
 #define REV_CH1_GPIO_Port GPIOE
 #define REV_CH2_Pin GPIO_PIN_9
@@ -67,6 +69,12 @@ void Error_Handler(void);
 #define REV_CH3_GPIO_Port GPIOE
 #define REV_CH4_Pin GPIO_PIN_13
 #define REV_CH4_GPIO_Port GPIOE
+#define WHEEL2_Pin GPIO_PIN_12
+#define WHEEL2_GPIO_Port GPIOD
+#define WHEEL3_Pin GPIO_PIN_13
+#define WHEEL3_GPIO_Port GPIOD
+#define WHEEL4_Pin GPIO_PIN_14
+#define WHEEL4_GPIO_Port GPIOD
 #define UART_SEND_Pin GPIO_PIN_10
 #define UART_SEND_GPIO_Port GPIOC
 #define UART_RECV_Pin GPIO_PIN_11
