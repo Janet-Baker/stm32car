@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define package_speed 449
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,7 +47,7 @@
 
 /* USER CODE BEGIN PV */
 uint8_t user_last_command;
-uint8_t last_moving_method = 'M';
+uint8_t last_moving_method = 'H';
 uint32_t step1[SLOW_START_LEVEL];
 uint32_t step2[SLOW_START_LEVEL];
 uint32_t step3[SLOW_START_LEVEL];
@@ -99,11 +99,16 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-    // init PWM
+  // move 300ms to tell user we boot on
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+    HAL_Delay(300);
+    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
 //  Enable UART serial port idle interrupt
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
 //  Enable DMA reception to Idle
@@ -168,6 +173,7 @@ void MyUartCallbackHandler(void) {
     switch (rx_data[0]) {
         //  'M': Continuous motion
         case 'M': {
+            user_last_command = 'M';
             // DEBUG, toggle LED2 to indicate that we have received a command.
             HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
             // switch moving method
@@ -176,7 +182,8 @@ void MyUartCallbackHandler(void) {
                 HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_1);
                 HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_1);
                 HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_2);
-                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_3);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_3);}
+            else if (last_moving_method == 'H') {
                 // init PWM
                 HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
                 HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
@@ -209,31 +216,30 @@ void MyUartCallbackHandler(void) {
             }
 
             // Speed of wheel 1
-            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0')/2;
+            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
             HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
             htim3.Instance->CCR3 = pwm1;
             HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 
             // Speed of wheel 2
-            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0')/2;
+            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
             htim4.Instance->CCR1 = pwm2;
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
             // Speed of wheel 3
-            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0')/2;
+            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
             htim4.Instance->CCR2 = pwm3;
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
             // Speed of wheel 4
-            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0')/2;
+            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
             htim4.Instance->CCR3 = pwm4;
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 
             // Set last_moving_method to 'M'
-            user_last_command = 'M';
             last_moving_method = 'M';
             break;
         }
@@ -241,6 +247,7 @@ void MyUartCallbackHandler(void) {
 //    TO-DO: Fix PWM generation for motor
 //    https://zhuanlan.zhihu.com/p/506458493
         case 'S': {
+            user_last_command = 'S';
             // toggle LED2 to indicate that we have received a command.
             // switch moving method
             if (last_moving_method == 'M') {
@@ -277,7 +284,7 @@ void MyUartCallbackHandler(void) {
             }
 
             // Speed of wheel 1
-            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0')/2;
+            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
             for (int i = 1; i < SLOW_START_LEVEL; ++i) {
                 step1[i-1] = pwm1 * i / SLOW_START_LEVEL;
             }
@@ -285,7 +292,7 @@ void MyUartCallbackHandler(void) {
             HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, step1, SLOW_START_LEVEL);
 
             // Speed of wheel 2
-            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0')/2;
+            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
             for (int i = 1; i < SLOW_START_LEVEL; ++i) {
                 step2[i-1] = pwm2 * i / SLOW_START_LEVEL;
             }
@@ -293,7 +300,7 @@ void MyUartCallbackHandler(void) {
             HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_1, step2, SLOW_START_LEVEL);
 
             // Speed of wheel 3
-            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0')/2;
+            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
             for (int i = 1; i < SLOW_START_LEVEL; ++i) {
                 step3[i-1] = pwm3 * i / SLOW_START_LEVEL;
             }
@@ -301,7 +308,7 @@ void MyUartCallbackHandler(void) {
             HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_2, step3, SLOW_START_LEVEL);
 
             // Speed of wheel 4
-            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0')/2;
+            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
             for (int i = 1; i < SLOW_START_LEVEL; ++i) {
                 step4[i-1] = pwm4 * i / SLOW_START_LEVEL;
             }
@@ -309,7 +316,6 @@ void MyUartCallbackHandler(void) {
             HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_3, step4, SLOW_START_LEVEL);
 
             // post command
-            user_last_command = 'S';
             last_moving_method = 'S';
             break;
         }
@@ -332,19 +338,100 @@ void MyUartCallbackHandler(void) {
             user_last_command = 'E';
             break;
         }
-        // 'P': Set Prescaler
-        // Default: 72-1
+        // 'P': Packaged commands
         case 'P': {
-            htim3.Init.Prescaler = (rx_data[1] - '0') * 10 + (rx_data[2] - '0');
-            htim4.Init.Prescaler = (rx_data[1] - '0') * 10 + (rx_data[2] - '0');
-            htim3.Instance->PSC = (rx_data[1] - '0') * 10 + (rx_data[2] - '0');
-            htim4.Instance->PSC = (rx_data[1] - '0') * 10 + (rx_data[2] - '0');
+            // DEBUG, toggle LED2 to indicate that we have received a command.
+            HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+            // switch moving method
+            if (last_moving_method == 'S') {
+                // Stop DMA
+                HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_2);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_3);
+            } else if (last_moving_method == 'H') {
+                // init PWM
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+            }
+            switch (rx_data[1]) {
+                // moving forward
+                case 'Q': {
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+                    htim3.Instance->CCR3 = package_speed;
+                    htim4.Instance->CCR1 = package_speed;
+                    htim4.Instance->CCR2 = package_speed;
+                    htim4.Instance->CCR3 = package_speed;
+                    break;
+                }
+                // moving backward
+                case 'H':{
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+                    htim3.Instance->CCR3 = package_speed;
+                    htim4.Instance->CCR1 = package_speed;
+                    htim4.Instance->CCR2 = package_speed;
+                    htim4.Instance->CCR3 = package_speed;
+                    break;
+                }
+                // turn left
+                case 'Z':{
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+                    htim3.Instance->CCR3 = package_speed;
+                    htim4.Instance->CCR1 = package_speed;
+                    htim4.Instance->CCR2 = package_speed;
+                    htim4.Instance->CCR3 = package_speed;
+                    break;
+                }
+                // turn right
+                case 'Y':{
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+                    htim3.Instance->CCR3 = package_speed;
+                    htim4.Instance->CCR1 = package_speed;
+                    htim4.Instance->CCR2 = package_speed;
+                    htim4.Instance->CCR3 = package_speed;
+                    break;
+                }
+                default:
+                    break;
+            }
             user_last_command = 'P';
+            last_moving_method = 'M';
+            break;
         }
         // 'R': Reset
         case 'R': {
             user_last_command = 'R';
             Error_Handler();
+        }
+        // 'H': Halt
+        case 'H': {
+            if (last_moving_method == 'S') {
+                HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_3);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_2);
+                HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_3);
+            }
+            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+            user_last_command = 'H';
+            last_moving_method = 'H';
+            break;
         }
         default:
             return;
