@@ -104,12 +104,11 @@ int main(void)
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-//  Enable serial port idle interrupt
+//  Enable UART serial port idle interrupt
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
 //  Enable DMA reception to Idle
 //  "rx_data_length" is defined in "usart.h"
     HAL_UARTEx_ReceiveToIdle_DMA(&huart4, rx_data, rx_data_length);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
