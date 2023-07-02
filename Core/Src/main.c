@@ -104,21 +104,6 @@ int main(void)
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-    // Report that we have initialized.
-    for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
-        if (i > 100) {
-            Error_Handler();
-        }
-        HAL_Delay(100);
-    }
-    // "BOOT_OK"
-    tx_data[0] = 'B'; tx_data[1]='O'; tx_data[2]='O'; tx_data[3]='T'; tx_data[4]='_'; tx_data[5]='O'; tx_data[6]='K';
-    HAL_UART_Transmit_DMA(&huart4, tx_data, 7);
-
-//  Launch completed and ready to receive data
-    for (int i = 0; HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY; ++i) {
-        HAL_Delay(100);
-    }
 //  Enable serial port idle interrupt
     __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
 //  Enable DMA reception to Idle
