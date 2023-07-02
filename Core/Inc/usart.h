@@ -47,7 +47,7 @@ extern uint8_t rx_data[rx_data_length];
 
 // General length of Asynchronous Transmitter
 #ifndef tx_data_length
-#define tx_data_length 16
+#define tx_data_length 17
 #endif
 
 #ifndef tx_data

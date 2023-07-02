@@ -46,7 +46,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t user_last_command;
+uint8_t last_moving_method = 'M';
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -175,10 +176,8 @@ void SystemClock_Config(void)
 // Pending Implementation
 void MyUartCallbackHandler(void) {
 //    Detect and execute control command
-//    TO-DO: Fix PWM generation for motor
-//    https://zhuanlan.zhihu.com/p/506458493
     switch (rx_data[0]) {
-        //  'M': Human-friendly speed control command
+        //  'M': Continuous motion
         case 'M': {
             // DEBUG, toggle LED2 to indicate that we have received a command.
             HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
@@ -206,19 +205,56 @@ void MyUartCallbackHandler(void) {
             } else {
                 HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
             }
+            // method switch
+            if (last_moving_method == 'S') {
+                // init PWM
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+            }
 
             // Speed of wheel 1
+            uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0')/2;
+            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+            __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm1);
+            HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 
             // Speed of wheel 2
+            uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0')/2;
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pwm2);
+            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
             // Speed of wheel 3
+            uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0')/2;
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3);
+            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
             // Speed of wheel 4
+            uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0')/2;
+            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pwm4);
+            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+
+            // Set last_moving_method to 'M'
+            user_last_command = 'M';
+            last_moving_method = 'M';
             break;
         }
-            // 'S': DEBUG usage, raw speed control
+            // 'S': Step moving
+//    TO-DO: Fix PWM generation for motor
+//    https://zhuanlan.zhihu.com/p/506458493
         case 'S': {
             // toggle LED2 to indicate that we have received a command.
+            if (last_moving_method == 'M') {
+                // stop PWM
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+            }
             HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
             // Direction of wheel 1
             if (rx_data[1] == '0') {
@@ -252,6 +288,10 @@ void MyUartCallbackHandler(void) {
             // Speed of wheel 3
 
             // Speed of wheel 4
+
+            // post command
+            user_last_command = 'S';
+            last_moving_method = 'S';
             break;
         }
             // 'E': Echo that we are online
@@ -260,13 +300,23 @@ void MyUartCallbackHandler(void) {
             HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
             // erase command to avoid calling echo again
             rx_data[0] = '0';
+            tx_data[0] = user_last_command;
+            for (int i = 1; i < tx_data_length; ++i) {
+                tx_data[i] = rx_data[i];
+            }
             __HAL_UART_DISABLE_IT(&huart4, UART_IT_IDLE);
             // send buffer, reused rx_data as tx_data
             // Notice! calling this function may trigger a UART interrupt
             // which will call MyUartCallbackHandler() again
-            HAL_UART_Transmit(&huart4, rx_data + 1, tx_data_length, 300);
+            HAL_UART_Transmit(&huart4, tx_data, tx_data_length, 300);
             __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+            user_last_command = 'E';
             break;
+        }
+            // 'R': Reset
+        case 'R': {
+            user_last_command = 'R';
+            Error_Handler();
         }
         default:
             return;
@@ -295,7 +345,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-    // Turn off LED2
+    // Turn on LED2
     HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
     __disable_irq();
     HAL_NVIC_SystemReset();
