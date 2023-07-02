@@ -215,25 +215,25 @@ void MyUartCallbackHandler(void) {
             }
 
             // Speed of wheel 1
-            uint16_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0')/2;
+            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0')/2;
             HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
             __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm1);
             HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 
             // Speed of wheel 2
-            uint16_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0')/2;
+            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0')/2;
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
             __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pwm2);
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
             // Speed of wheel 3
-            uint16_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0')/2;
+            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0')/2;
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
             __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm3);
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
             // Speed of wheel 4
-            uint16_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0')/2;
+            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0')/2;
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
             __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pwm4);
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
