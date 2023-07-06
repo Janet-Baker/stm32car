@@ -35,7 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define package_speed 449
+#define DEFAULT_CCR 449
+#define DEFAULT_ARR 899
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -171,6 +172,10 @@ void SystemClock_Config(void)
 void MyUartCallbackHandler(void) {
 //    Detect and execute control command
     switch (rx_data[0]) {
+/*
+ * 注意！代码有问题，ARR是每一个TIM才有一个，如果需要每个轮子一个速度，根据电机不同，要么改变CCR，要么准备4个TIM
+ * 这个代码写的有问题，不过不影响，因为我们只用到了'P'指令。
+*/
         //  'M': Continuous motion
         case 'M': {
             user_last_command = 'M';
@@ -243,9 +248,9 @@ void MyUartCallbackHandler(void) {
             last_moving_method = 'M';
             break;
         }
-            // 'S': Step moving
-//    TO-DO: Fix PWM generation for motor
-//    https://zhuanlan.zhihu.com/p/506458493
+/*    TO-DO: Fix PWM generation for motor
+    https://zhuanlan.zhihu.com/p/506458493*/
+        // 'S': Step moving
         case 'S': {
             user_last_command = 'S';
             // toggle LED2 to indicate that we have received a command.
@@ -319,7 +324,7 @@ void MyUartCallbackHandler(void) {
             last_moving_method = 'S';
             break;
         }
-            // 'E': Echo that we are online
+        // 'E': Echo that we are online
         case 'E': {
             // toggle LED2 to indicate that we have received a command.
             HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
@@ -363,10 +368,12 @@ void MyUartCallbackHandler(void) {
                     HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
                     HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
                     HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
-                    htim3.Instance->CCR3 = package_speed;
-                    htim4.Instance->CCR1 = package_speed;
-                    htim4.Instance->CCR2 = package_speed;
-                    htim4.Instance->CCR3 = package_speed;
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = DEFAULT_CCR;
+                    htim4.Instance->CCR1 = DEFAULT_CCR;
+                    htim4.Instance->CCR2 = DEFAULT_CCR;
+                    htim4.Instance->CCR3 = DEFAULT_CCR;
                     break;
                 }
                 // moving backward
@@ -375,10 +382,12 @@ void MyUartCallbackHandler(void) {
                     HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
                     HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
                     HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
-                    htim3.Instance->CCR3 = package_speed;
-                    htim4.Instance->CCR1 = package_speed;
-                    htim4.Instance->CCR2 = package_speed;
-                    htim4.Instance->CCR3 = package_speed;
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = DEFAULT_CCR;
+                    htim4.Instance->CCR1 = DEFAULT_CCR;
+                    htim4.Instance->CCR2 = DEFAULT_CCR;
+                    htim4.Instance->CCR3 = DEFAULT_CCR;
                     break;
                 }
                 // turn left
@@ -387,10 +396,12 @@ void MyUartCallbackHandler(void) {
                     HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_SET);
                     HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
                     HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
-                    htim3.Instance->CCR3 = package_speed;
-                    htim4.Instance->CCR1 = package_speed;
-                    htim4.Instance->CCR2 = package_speed;
-                    htim4.Instance->CCR3 = package_speed;
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = DEFAULT_CCR;
+                    htim4.Instance->CCR1 = DEFAULT_CCR;
+                    htim4.Instance->CCR2 = DEFAULT_CCR;
+                    htim4.Instance->CCR3 = DEFAULT_CCR;
                     break;
                 }
                 // turn right
@@ -399,10 +410,40 @@ void MyUartCallbackHandler(void) {
                     HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
                     HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
                     HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
-                    htim3.Instance->CCR3 = package_speed;
-                    htim4.Instance->CCR1 = package_speed;
-                    htim4.Instance->CCR2 = package_speed;
-                    htim4.Instance->CCR3 = package_speed;
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = DEFAULT_CCR;
+                    htim4.Instance->CCR1 = DEFAULT_CCR;
+                    htim4.Instance->CCR2 = DEFAULT_CCR;
+                    htim4.Instance->CCR3 = DEFAULT_CCR;
+                    break;
+                }
+                // moving forward with turn left
+                case 'L':{
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_SET);
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = 0;
+                    htim4.Instance->CCR1 = 0;
+                    htim4.Instance->CCR2 = DEFAULT_CCR;
+                    htim4.Instance->CCR3 = DEFAULT_CCR;
+                    break;
+                }
+                // moving forward with turn right
+                case 'R':{
+                    HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
+                    htim3.Instance->ARR = DEFAULT_ARR;
+                    htim4.Instance->ARR = DEFAULT_ARR;
+                    htim3.Instance->CCR3 = DEFAULT_CCR;
+                    htim4.Instance->CCR1 = DEFAULT_CCR;
+                    htim4.Instance->CCR2 = 0;
+                    htim4.Instance->CCR3 = 0;
                     break;
                 }
                 default:
@@ -425,6 +466,10 @@ void MyUartCallbackHandler(void) {
                 HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_2);
                 HAL_TIM_PWM_Stop_DMA(&htim4, TIM_CHANNEL_3);
             }
+            HAL_GPIO_WritePin(REV_CH1_GPIO_Port, REV_CH1_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(REV_CH2_GPIO_Port, REV_CH2_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(REV_CH3_GPIO_Port, REV_CH3_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(REV_CH4_GPIO_Port, REV_CH4_Pin, GPIO_PIN_RESET);
             HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
