@@ -81,7 +81,9 @@ void Error_Handler(void);
 #define UART_RECV_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
-#define SLOW_START_LEVEL 200
+#define DEFAULT_CCR 449
+#define DEFAULT_ARR 899
+#define SLOW_START_LEVEL DEFAULT_ARR
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

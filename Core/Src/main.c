@@ -35,8 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DEFAULT_CCR 449
-#define DEFAULT_ARR 899
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -286,34 +285,58 @@ void MyUartCallbackHandler(void) {
 
             // Speed of wheel 1
             uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
-            for (int i = 1; i < SLOW_START_LEVEL; ++i) {
-                step1[i-1] = pwm1 * i / SLOW_START_LEVEL;
+            if (pwm1 == 0) {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step1[i] = 0;
+                }
+            } else {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step1[i] = i < pwm1 ? DEFAULT_CCR : 0;
+                }
             }
-            step1[SLOW_START_LEVEL-1] = 0;
-            HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, step1, SLOW_START_LEVEL);
+            step1[SLOW_START_LEVEL - 1] = 0;
 
             // Speed of wheel 2
             uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
-            for (int i = 1; i < SLOW_START_LEVEL; ++i) {
-                step2[i-1] = pwm2 * i / SLOW_START_LEVEL;
+            if (pwm2 == 0) {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step2[i] = 0;
+                }
+            } else {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step2[i] = i < pwm2 ? DEFAULT_CCR : 0;
+                }
             }
-            step2[SLOW_START_LEVEL-1] = 0;
-            HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_1, step2, SLOW_START_LEVEL);
+            step2[SLOW_START_LEVEL - 1] = 0;
 
             // Speed of wheel 3
             uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
-            for (int i = 1; i < SLOW_START_LEVEL; ++i) {
-                step3[i-1] = pwm3 * i / SLOW_START_LEVEL;
+            if (pwm3 == 0) {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step3[i] = 0;
+                }
+            } else {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step3[i] = i < pwm3 ? DEFAULT_CCR : 0;
+                }
             }
-            step3[SLOW_START_LEVEL-1] = 0;
-            HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_2, step3, SLOW_START_LEVEL);
+            step3[SLOW_START_LEVEL - 1] = 0;
 
             // Speed of wheel 4
             uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
-            for (int i = 1; i < SLOW_START_LEVEL; ++i) {
-                step4[i-1] = pwm4 * i / SLOW_START_LEVEL;
+            if (pwm4 == 0) {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step4[i] = 0;
+                }
+            } else {
+                for (int i = 0; i < SLOW_START_LEVEL - 1; ++i) {
+                    step4[i] = i < pwm4 ? DEFAULT_CCR : 0;
+                }
             }
-            step4[SLOW_START_LEVEL-1] = 0;
+            step4[SLOW_START_LEVEL - 1] = 0;
+            HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, step1, SLOW_START_LEVEL);
+            HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_1, step2, SLOW_START_LEVEL);
+            HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_2, step3, SLOW_START_LEVEL);
             HAL_TIM_PWM_Start_DMA(&htim4, TIM_CHANNEL_3, step4, SLOW_START_LEVEL);
 
             // post command
