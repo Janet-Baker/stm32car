@@ -221,27 +221,23 @@ void MyUartCallbackHandler(void) {
             }
 
             // Speed of wheel 1
-            uint32_t pwm1 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
             HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
-            htim3.Instance->CCR3 = pwm1;
+            htim3.Instance->CCR3 = (rx_data[5] - '0') * 100 + (rx_data[6] - '0') * 10 + (rx_data[7] - '0');
             HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 
             // Speed of wheel 2
-            uint32_t pwm2 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
-            htim4.Instance->CCR1 = pwm2;
+            htim4.Instance->CCR1 = (rx_data[8] - '0') * 100 + (rx_data[9] - '0') * 10 + (rx_data[10] - '0');
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
             // Speed of wheel 3
-            uint32_t pwm3 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
-            htim4.Instance->CCR2 = pwm3;
+            htim4.Instance->CCR2 = (rx_data[11] - '0') * 100 + (rx_data[12] - '0') * 10 + (rx_data[13] - '0');
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
             // Speed of wheel 4
-            uint32_t pwm4 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
             HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
-            htim4.Instance->CCR3 = pwm4;
+            htim4.Instance->CCR3 = (rx_data[14] - '0') * 100 + (rx_data[15] - '0') * 10 + (rx_data[16] - '0');
             HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 
             // Set last_moving_method to 'M'
