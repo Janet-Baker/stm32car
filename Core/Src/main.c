@@ -172,8 +172,8 @@ void MyUartCallbackHandler(void) {
 //    Detect and execute control command
     switch (rx_data[0]) {
 /*
- * 注意！代码有问题，ARR是每一个TIM才有一个，如果需要每个轮子一个速度，根据电机不同，要么改变CCR，要么准备4个TIM
- * 这个代码写的有问题，不过不影响，因为我们只用到了'P'指令。
+ * TO-DO: Fix command 'M'
+ * Arrange more timer to control the speed of any specific motor
 */
         //  'M': Continuous motion
         case 'M': {
@@ -243,8 +243,7 @@ void MyUartCallbackHandler(void) {
             last_moving_method = 'M';
             break;
         }
-/*    TO-DO: Fix PWM generation for motor
-    https://zhuanlan.zhihu.com/p/506458493*/
+        // https://zhuanlan.zhihu.com/p/506458493
         // 'S': Step moving
         case 'S': {
             user_last_command = 'S';
